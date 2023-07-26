@@ -24,18 +24,34 @@ WEATHER_TRANSLATIONS = {
 }
 
 
+def get_bot_response_template(command):
+    connection = psycopg2.connect(
+        dbname='bot',
+        user='postgres',
+        password='123',
+        host='localhost',
+        port='5432'
+    )
+
+    cursor = connection.cursor()
+    cursor.execute("SELECT response FROM bot_response_templates WHERE command = %s", (command,))
+    template = cursor.fetchone()
+    connection.close()
+
+    return template[0] if template else None
+
+
 def start(update: Update, _: CallbackContext) -> int:
-    update.message.reply_text(f"Привет! Чем могу помочь?\n"
-                              f"Используй /help, чтобы узнать доступные команды.",
-                              reply_markup=ReplyKeyboardMarkup([['/weather', '/news']]))
+    bot_response = get_bot_response_template("/start")
+    if bot_response:
+        update.message.reply_text(bot_response, reply_markup=ReplyKeyboardMarkup([['/weather', '/news']]))
     return START
 
 
 def help_command(update: Update, _: CallbackContext) -> int:
-    update.message.reply_text("Список доступных команд:\n"
-                              "/help - показать список команд\n"
-                              "/weather [город] - узнать погоду в указанном городе\n"
-                              "/news - получить случайную новость")
+    bot_response = get_bot_response_template("/help")
+    if bot_response:
+        update.message.reply_text(bot_response)
     return START
 
 
@@ -43,7 +59,9 @@ def weather(update: Update, _: CallbackContext) -> int:
     try:
         city = update.message.text.split(' ', 1)[1]
     except IndexError:
-        update.message.reply_text("Укажите город после команды /weather, например: /weather Москва")
+        bot_response = get_bot_response_template("/weather")
+        if bot_response:
+            update.message.reply_text(bot_response)
         return START
 
     url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}'
@@ -54,11 +72,16 @@ def weather(update: Update, _: CallbackContext) -> int:
         temperature = data['main']['temp'] - 273.15
         weather_description_en = data['weather'][0]['description']
         weather_description_ru = WEATHER_TRANSLATIONS.get(weather_description_en, weather_description_en)
-        bot_response = f"Текущая погода в городе {city}: {weather_description_ru}, температура: {temperature:.2f}°C"
-        update.message.reply_text(bot_response)
-        save_message(update, _, bot_response)
+        bot_response_template = get_bot_response_template("/weather_response")
+        if bot_response_template:
+            bot_response = bot_response_template.format(city=city, weather_description_ru=weather_description_ru,
+                                                        temperature=temperature)
+            update.message.reply_text(bot_response)
+            save_message(update, _, bot_response)
     else:
-        update.message.reply_text(f"Не удалось получить данные о погоде в городе {city}. Проверьте правильность названия города.")
+        bot_response = get_bot_response_template("/weather_error")
+        if bot_response:
+            update.message.reply_text(bot_response.format(city=city))
 
     return START
 
@@ -73,11 +96,14 @@ def news(update: Update, _: CallbackContext) -> int:
         random_article = random.choice(articles)
         title = random_article['title']
         url = random_article['url']
-        bot_response = f"Случайная новость:\n{title}\nЧитать далее: {url}"
-        update.message.reply_text(bot_response)
+        bot_response = get_bot_response_template("/news_response")
+        if bot_response:
+            update.message.reply_text(bot_response.format(title=title, url=url))
         save_message(update, _, bot_response)
     else:
-        update.message.reply_text("Не удалось получить новости. Попробуйте позже.")
+        bot_response = get_bot_response_template("/news_error")
+        if bot_response:
+            update.message.reply_text(bot_response)
 
     return START
 
@@ -96,7 +122,8 @@ def save_message(update: Update, _: CallbackContext, bot_response: str = None):
     )
 
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO service_bot_message (user_id, message, is_bot, timestamp) VALUES (%s, %s, %s, %s)", (user_id, message, False, timestamp))
+    cursor.execute("INSERT INTO service_bot_message (user_id, message, is_bot, timestamp) VALUES (%s, %s, %s, %s)",
+                   (user_id, message, False, timestamp))
 
     if bot_response:
         cursor.execute("INSERT INTO service_bot_message (user_id, message, is_bot, timestamp) VALUES (%s, %s, %s, %s)",
@@ -107,7 +134,10 @@ def save_message(update: Update, _: CallbackContext, bot_response: str = None):
 
 
 def handle_invalid_input(update: Update, _: CallbackContext) -> int:
-    update.message.reply_text("Извините, я действую строго по командам. Используйте /help, чтобы узнать доступные команды.")
+    bot_response = get_bot_response_template("/invalid_input")
+    if bot_response:
+        update.message.reply_text(bot_response)
+
     return START
 
 
