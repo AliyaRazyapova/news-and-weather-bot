@@ -9,6 +9,19 @@ WEATHER_API_KEY = 'c8a5c9addb456e34d66289ae7c122914'
 NEWS_API_KEY = '542e08dec9a94e3bac7b13452c9f8382'
 START, HELP, WEATHER, NEWS = range(4)
 
+WEATHER_TRANSLATIONS = {
+    'clear sky': 'ясное небо',
+    'few clouds': 'немного облачно',
+    'scattered clouds': 'рассеянные облака',
+    'broken clouds': 'облачно с прояснениями',
+    'overcast clouds': 'пасмурно',
+    'shower rain': 'кратковременный дождь',
+    'rain': 'дождь',
+    'thunderstorm': 'гроза',
+    'snow': 'снег',
+    'mist': 'туман',
+}
+
 
 def start(update: Update, _: CallbackContext) -> int:
     update.message.reply_text(f"Привет! Чем могу помочь?\n"
@@ -37,8 +50,9 @@ def weather(update: Update, _: CallbackContext) -> int:
 
     if data['cod'] == 200:
         temperature = data['main']['temp'] - 273.15
-        weather_description = data['weather'][0]['description']
-        update.message.reply_text(f"Текущая погода в городе {city}: {weather_description}, температура: {temperature:.2f}°C")
+        weather_description_en = data['weather'][0]['description']
+        weather_description_ru = WEATHER_TRANSLATIONS.get(weather_description_en, weather_description_en)
+        update.message.reply_text(f"Текущая погода в городе {city}: {weather_description_ru}, температура: {temperature:.2f}°C")
     else:
         update.message.reply_text(f"Не удалось получить данные о погоде в городе {city}. Проверьте правильность названия города.")
 
