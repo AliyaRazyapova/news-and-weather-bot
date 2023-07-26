@@ -85,6 +85,7 @@ def news(update: Update, _: CallbackContext) -> int:
 def save_message(update: Update, _: CallbackContext, bot_response: str = None):
     user_id = update.effective_user.id
     message = update.message.text
+    timestamp = update.message.date
 
     connection = psycopg2.connect(
         dbname='bot',
@@ -95,12 +96,11 @@ def save_message(update: Update, _: CallbackContext, bot_response: str = None):
     )
 
     cursor = connection.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS messages (user_id INTEGER, message TEXT, is_bot BOOLEAN)")
-    cursor.execute("INSERT INTO messages (user_id, message, is_bot) VALUES (%s, %s, %s)", (user_id, message, False))
+    cursor.execute("INSERT INTO service_bot_message (user_id, message, is_bot, timestamp) VALUES (%s, %s, %s, %s)", (user_id, message, False, timestamp))
 
     if bot_response:
-        cursor.execute("INSERT INTO messages (user_id, message, is_bot) VALUES (%s, %s, %s)",
-                       (user_id, bot_response, True))
+        cursor.execute("INSERT INTO service_bot_message (user_id, message, is_bot, timestamp) VALUES (%s, %s, %s, %s)",
+                       (user_id, bot_response, True, timestamp))
 
     connection.commit()
     connection.close()
