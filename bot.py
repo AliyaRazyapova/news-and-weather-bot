@@ -1,7 +1,11 @@
+import random
+
+import requests
 from telegram import Update
 from telegram.ext import CallbackContext, Updater, CommandHandler, MessageHandler, Filters
 
 TOKEN = '6297467458:AAFAxPhx1pk5xCGe7EZt7TAmu6UP4frxSxc'
+NEWS_API_KEY = '542e08dec9a94e3bac7b13452c9f8382'
 START, HELP, WEATHER, NEWS = range(4)
 
 
@@ -23,8 +27,21 @@ def weather():
     pass
 
 
-def news():
-    pass
+def news(update: Update, _: CallbackContext) -> int:
+    url = f'https://newsapi.org/v2/top-headlines?country=ru&apiKey={NEWS_API_KEY}'
+    response = requests.get(url)
+    data = response.json()
+
+    if data['status'] == 'ok':
+        articles = data['articles']
+        random_article = random.choice(articles)
+        title = random_article['title']
+        url = random_article['url']
+        update.message.reply_text(f"Случайная новость:\n{title}\nЧитать далее: {url}")
+    else:
+        update.message.reply_text("Не удалось получить новости. Попробуйте позже.")
+
+    return START
 
 
 def save_message():
