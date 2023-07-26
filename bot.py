@@ -96,10 +96,11 @@ def news(update: Update, _: CallbackContext) -> int:
         random_article = random.choice(articles)
         title = random_article['title']
         url = random_article['url']
-        bot_response = get_bot_response_template("/news_response")
-        if bot_response:
-            update.message.reply_text(bot_response.format(title=title, url=url))
-        save_message(update, _, bot_response)
+        bot_response_template = get_bot_response_template("/news_response")
+        if bot_response_template:
+            bot_response = bot_response_template.format(title=title, url=url)
+            update.message.reply_text(bot_response)
+            save_message(update, _, bot_response)
     else:
         bot_response = get_bot_response_template("/news_error")
         if bot_response:
