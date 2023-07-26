@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>История сообщений бота</title>
+</head>
+<body>
+    <h1>История сообщений бота</h1>
+    <ul>
+        {% for message in messages %}
+            <li>
+                {{ message.timestamp }} - {% if message.is_bot %}
+                <strong>Бот:</strong>
+                {% else %}
+                <strong>Пользователь:</strong>
+                {% endif %}
+                {{ message.message }}
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
