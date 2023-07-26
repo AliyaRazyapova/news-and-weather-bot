@@ -1,5 +1,6 @@
 import random
 
+import psycopg2
 import requests
 from telegram import Update
 from telegram.ext import CallbackContext, Updater, CommandHandler, MessageHandler, Filters
@@ -52,7 +53,9 @@ def weather(update: Update, _: CallbackContext) -> int:
         temperature = data['main']['temp'] - 273.15
         weather_description_en = data['weather'][0]['description']
         weather_description_ru = WEATHER_TRANSLATIONS.get(weather_description_en, weather_description_en)
-        update.message.reply_text(f"Текущая погода в городе {city}: {weather_description_ru}, температура: {temperature:.2f}°C")
+        bot_response = f"Текущая погода в городе {city}: {weather_description_ru}, температура: {temperature:.2f}°C"
+        update.message.reply_text(bot_response)
+        save_message(update, _, bot_response)
     else:
         update.message.reply_text(f"Не удалось получить данные о погоде в городе {city}. Проверьте правильность названия города.")
 
@@ -69,15 +72,37 @@ def news(update: Update, _: CallbackContext) -> int:
         random_article = random.choice(articles)
         title = random_article['title']
         url = random_article['url']
-        update.message.reply_text(f"Случайная новость:\n{title}\nЧитать далее: {url}")
+        bot_response = f"Случайная новость:\n{title}\nЧитать далее: {url}"
+        update.message.reply_text(bot_response)
+        save_message(update, _, bot_response)
     else:
         update.message.reply_text("Не удалось получить новости. Попробуйте позже.")
 
     return START
 
 
-def save_message():
-    pass
+def save_message(update: Update, _: CallbackContext, bot_response: str = None):
+    user_id = update.effective_user.id
+    message = update.message.text
+
+    connection = psycopg2.connect(
+        dbname='bot',
+        user='postgres',
+        password='123',
+        host='localhost',
+        port='5432'
+    )
+
+    cursor = connection.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS messages (user_id INTEGER, message TEXT, is_bot BOOLEAN)")
+    cursor.execute("INSERT INTO messages (user_id, message, is_bot) VALUES (%s, %s, %s)", (user_id, message, False))
+
+    if bot_response:
+        cursor.execute("INSERT INTO messages (user_id, message, is_bot) VALUES (%s, %s, %s)",
+                       (user_id, bot_response, True))
+
+    connection.commit()
+    connection.close()
 
 
 def main() -> None:
@@ -88,7 +113,6 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("weather", weather))
     dispatcher.add_handler(CommandHandler("news", news))
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, save_message))
 
     updater.start_polling()
     updater.idle()
