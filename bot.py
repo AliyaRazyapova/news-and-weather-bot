@@ -2,7 +2,7 @@ import random
 
 import psycopg2
 import requests
-from telegram import Update
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, Updater, CommandHandler, MessageHandler, Filters
 
 TOKEN = '6297467458:AAFAxPhx1pk5xCGe7EZt7TAmu6UP4frxSxc'
@@ -26,7 +26,8 @@ WEATHER_TRANSLATIONS = {
 
 def start(update: Update, _: CallbackContext) -> int:
     update.message.reply_text(f"Привет! Чем могу помочь?\n"
-                              f"Используй /help, чтобы узнать доступные команды.")
+                              f"Используй /help, чтобы узнать доступные команды.",
+                              reply_markup=ReplyKeyboardMarkup([['/weather', '/news']]))
     return START
 
 
