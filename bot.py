@@ -105,6 +105,11 @@ def save_message(update: Update, _: CallbackContext, bot_response: str = None):
     connection.close()
 
 
+def handle_invalid_input(update: Update, _: CallbackContext) -> int:
+    update.message.reply_text("Извините, я действую строго по командам. Используйте /help, чтобы узнать доступные команды.")
+    return START
+
+
 def main() -> None:
     updater = Updater(token=TOKEN, use_context=True)
     dispatcher = updater.dispatcher
@@ -113,6 +118,9 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("weather", weather))
     dispatcher.add_handler(CommandHandler("news", news))
+
+    dispatcher.add_handler(MessageHandler(Filters.text & Filters.command, handle_invalid_input))
+    dispatcher.add_handler(MessageHandler(~Filters.command, handle_invalid_input))
 
     updater.start_polling()
     updater.idle()
