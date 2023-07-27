@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Дашборд</title>
+</head>
+<body>
+    <h1>Дашборд</h1>
+    <p>Всего диалогов с ботом: {{ total_dialogs }}</p>
+    <p>Всего пользовательских сообщений: {{ total_user_messages }}</p>
+    <p>Всего ответов бота: {{ total_bot_responses }}</p>
+
+    <h2>Наиболее популярные команды:</h2>
+    <ul>
+        {% for command in popular_commands %}
+        <li>{{ command.message }} ({{ command.count }})</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
