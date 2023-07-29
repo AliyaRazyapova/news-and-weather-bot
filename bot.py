@@ -30,11 +30,11 @@ def get_bot_response_template(command):
         user='postgres',
         password='123',
         host='localhost',
-        port='5432'
+        port='5433'
     )
 
     cursor = connection.cursor()
-    cursor.execute("SELECT response FROM bot_response_templates WHERE command = %s", (command,))
+    cursor.execute("SELECT response FROM service_bot_botresponse WHERE command = %s", (command,))
     template = cursor.fetchone()
     connection.close()
 
@@ -119,7 +119,7 @@ def save_message(update: Update, _: CallbackContext, bot_response: str = None):
         user='postgres',
         password='123',
         host='localhost',
-        port='5432'
+        port='5433'
     )
 
     cursor = connection.cursor()
