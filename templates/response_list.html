@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ответы бота</title>
+</head>
+<body>
+    <ul>
+        {% for template in templates %}
+            <li>
+                <div>{{ template.command }}</div>
+                <div>{{ template.response }}</div>
+                <div>
+                    <a href="{% url 'response_edit' template.id %}">
+                        Редактировать команду
+                    </a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

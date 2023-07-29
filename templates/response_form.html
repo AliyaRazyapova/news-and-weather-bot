@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Форма настройки ответа</title>
+</head>
+<body>
+    <form method="post">
+        {% csrf_token %}
+            <label for="command">Команда:</label><br>
+            <input type="text" name="command" value="{{ template.command|default_if_none:'' }}"><br>
+            <label for="response">Ответ:</label><br>
+            <textarea name="response">{{ template.response|default_if_none:'' }}</textarea><br>
+            <button type="submit">Сохранить</button>
+    </form>
+</body>
+</html>
