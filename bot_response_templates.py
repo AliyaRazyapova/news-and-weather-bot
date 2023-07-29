@@ -1,13 +1,34 @@
 import psycopg2
 
 
+def create_table():
+    connection = psycopg2.connect(
+        dbname='bot',
+        user='postgres',
+        password='123',
+        host='localhost',
+        port=5433
+    )
+
+    cursor = connection.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS bot_response_templates (
+            id SERIAL PRIMARY KEY,
+            command VARCHAR(255) NOT NULL,
+            response TEXT NOT NULL
+        )
+    """)
+    connection.commit()
+    connection.close()
+
+
 def add_response_template(command: str, response: str):
     connection = psycopg2.connect(
         dbname='bot',
         user='postgres',
         password='123',
         host='localhost',
-        port='5432'
+        port=5433
     )
 
     cursor = connection.cursor()
@@ -28,4 +49,6 @@ def add_response_templates():
     add_response_template("/invalid_command", "Извините, я действую строго по командам. Используйте /help, чтобы узнать доступные команды.")
 
 
-add_response_template()
+if __name__ == '__main__':
+    create_table()
+    add_response_templates()
