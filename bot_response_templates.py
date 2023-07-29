@@ -1,27 +1,6 @@
 import psycopg2
 
 
-def create_table():
-    connection = psycopg2.connect(
-        dbname='bot',
-        user='postgres',
-        password='123',
-        host='localhost',
-        port=5433
-    )
-
-    cursor = connection.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS bot_response_templates (
-            id SERIAL PRIMARY KEY,
-            command VARCHAR(255) NOT NULL,
-            response TEXT NOT NULL
-        )
-    """)
-    connection.commit()
-    connection.close()
-
-
 def add_response_template(command: str, response: str):
     connection = psycopg2.connect(
         dbname='bot',
@@ -32,7 +11,7 @@ def add_response_template(command: str, response: str):
     )
 
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO bot_response_templates (command, response) VALUES (%s, %s)", (command, response))
+    cursor.execute("INSERT INTO service_bot_botresponse (command, response) VALUES (%s, %s)", (command, response))
 
     connection.commit()
     connection.close()
@@ -50,5 +29,4 @@ def add_response_templates():
 
 
 if __name__ == '__main__':
-    create_table()
     add_response_templates()
