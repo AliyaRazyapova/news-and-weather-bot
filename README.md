@@ -12,7 +12,11 @@
 `git clone https://github.com/your_username/your_telegram_bot.git
 `
 
-2. Создайте файл .env в корневой директории проекта и добавьте в него следующие переменные окружения:
+2. Установить необходимые зависимости 
+
+`pip install -r requirements.txt`
+
+3. Создайте файл .env в корневой директории проекта и добавьте в него следующие переменные окружения:
 - TOKEN
 - WEATHER_API_KEY
 - NEWS_API_KEY
