@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Message, BotResponse
 
@@ -7,6 +8,11 @@ from .models import Message, BotResponse
 def message_history(request):
     messages = Message.objects.all()
     return render(request, 'history.html', {'messages': messages})
+
+
+def message_list_json(request):
+    messages = Message.objects.all().values('timestamp', 'message')
+    return JsonResponse(list(messages), safe=False)
 
 
 @login_required

@@ -17,5 +17,30 @@
             </li>
         {% endfor %}
     </ul>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            updateMessages();
+            function updateMessages() {
+                $.ajax({
+                    type: 'GET',
+                    url: '{% url "message_list_json" %}',
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#message-list').empty();
+                        $.each(data, function(index, message) {
+                            $('#message-list').append('<li>' + message.timestamp + ' - ' + message.message + '</li>');
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            }
+
+            setInterval(updateMessages, 5000);
+        });
+    </script>
 </body>
 </html>
