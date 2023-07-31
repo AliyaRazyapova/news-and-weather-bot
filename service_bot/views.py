@@ -10,6 +10,17 @@ def message_history(request):
     return render(request, 'history.html', {'messages': messages})
 
 
+from django.http import Http404
+
+def user_message_history(request):
+    user_id = request.GET.get('user_id')
+    if user_id is None:
+        raise Http404("User ID not specified in the URL")
+
+    messages = Message.objects.filter(user_id=user_id)
+    return render(request, 'user_history.html', {'messages': messages})
+
+
 def message_list_json(request):
     messages = Message.objects.all().values('timestamp', 'message')
     return JsonResponse(list(messages), safe=False)

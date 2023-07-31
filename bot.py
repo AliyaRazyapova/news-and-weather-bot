@@ -5,7 +5,7 @@ import requests
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext, Updater, CommandHandler, MessageHandler, Filters
 
-TOKEN = '6297467458:AAFAxPhx1pk5xCGe7EZt7TAmu6UP4frxSxc'
+TOKEN = '6297467458:AAHNIxCShZXdyEreOeZ7bsSNKsalS7Vi74A'
 WEATHER_API_KEY = 'c8a5c9addb456e34d66289ae7c122914'
 NEWS_API_KEY = '542e08dec9a94e3bac7b13452c9f8382'
 START, HELP, WEATHER, NEWS = range(4)
@@ -44,7 +44,7 @@ def get_bot_response_template(command):
 def start(update: Update, _: CallbackContext) -> int:
     bot_response = get_bot_response_template("/start")
     if bot_response:
-        update.message.reply_text(bot_response, reply_markup=ReplyKeyboardMarkup([['/weather', '/news']]))
+        update.message.reply_text(bot_response, reply_markup=ReplyKeyboardMarkup([['/weather', '/news'], ['/statistics']]))
     return START
 
 
@@ -142,6 +142,15 @@ def handle_invalid_input(update: Update, _: CallbackContext) -> int:
     return START
 
 
+def statistics(update: Update, _: CallbackContext) -> int:
+    user_id = update.effective_user.id
+    web_service_url = f"http://localhost:8000/?user_id={user_id}"
+    update.message.reply_text(f"Статистика доступна по ссылке: {web_service_url}")
+
+    return START
+
+
+
 def main() -> None:
     updater = Updater(token=TOKEN, use_context=True)
     dispatcher = updater.dispatcher
@@ -150,6 +159,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
     dispatcher.add_handler(CommandHandler("weather", weather))
     dispatcher.add_handler(CommandHandler("news", news))
+    dispatcher.add_handler(CommandHandler("statistics", statistics))
 
     dispatcher.add_handler(MessageHandler(Filters.text & Filters.command, handle_invalid_input))
     dispatcher.add_handler(MessageHandler(~Filters.command, handle_invalid_input))
